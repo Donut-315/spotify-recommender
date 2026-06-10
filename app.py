@@ -10,7 +10,34 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics.pairwise import cosine_similarity
+import urllib.parse
 
+def get_music_platform_url(song_name, artist_name, platform):
+    """
+    根据平台返回对应的搜索链接（支持网页版或App调起）
+    """
+    keyword = f"{song_name} {artist_name}"
+    encoded_keyword = urllib.parse.quote(keyword)
+    
+    if platform == "QQ音乐":
+        # 尝试 App 调起（手机），如果失败会自动跳转网页版？
+        # 这里使用 App 调起链接，手机上体验最好
+        return f"qqmusic://qq.com/search?key={encoded_keyword}"
+        # 备选网页版： f"https://y.qq.com/n/ryqq/search?w={encoded_keyword}"
+    elif platform == "酷狗音乐":
+        # 酷狗音乐的 App 调起 scheme（需要确认，常见的是 kugou://）
+        # 如果无效，可以改用网页版
+        return f"kugou://search?keyword={encoded_keyword}"
+        # 备选网页版： f"https://www.kugou.com/yy/html/search.html#searchType=song&searchKey={encoded_keyword}"
+    elif platform == "网易云音乐":
+        # 网易云音乐 App 调起 scheme
+        return f"orpheus://search?keyword={encoded_keyword}"
+        # 备选网页版： f"https://music.163.com/#/search/m/?s={encoded_keyword}"
+    elif platform == "Apple Music":
+        # Apple Music 网页版链接（因为 App 调起较复杂，使用网页版更通用）
+        return f"https://music.apple.com/cn/search?term={encoded_keyword}"
+    else:
+        return "#"
 # ---------- 页面配置 ----------
 st.set_page_config(page_title="Spotify 歌曲推荐", layout="wide")
 st.title("🎵 Spotify 智能歌曲推荐系统")
@@ -61,6 +88,15 @@ acoustic_val = st.sidebar.slider("🎸 声学性 (Acousticness)", 0.0, 1.0, 0.2,
 bpm_val = st.sidebar.slider("🎵 节拍 (BPM)", 60, 180, 110, 1)
 
 top_n = st.sidebar.number_input("推荐数量", min_value=1, max_value=20, value=5, step=1)
+
+# 在侧边栏添加平台选择（单选）
+st.sidebar.subheader("🎵 选择你的音乐平台")
+platform = st.sidebar.radio(
+    "跳转目标平台",
+    options=["QQ音乐", "酷狗音乐", "网易云音乐", "Apple Music"],
+    index=0,  # 默认QQ音乐
+    horizontal=True
+)
 
 # 是否显示原始特征列
 show_features = st.sidebar.checkbox("显示歌曲的音频特征", value=True)
@@ -126,8 +162,13 @@ if st.sidebar.button("🎧 开始推荐", type="primary", use_container_width=Tr
             with st.container():
                 col1, col2, col3 = st.columns([3, 1, 1])
                 with col1:
-                    st.write(f"**{row['song_title']}** — {row['artist']}")
-                    st.caption(f"来源: {row['source']}  |  相似度得分: {row['similarity']:.4f}")
+                  music_url = get_music_platform_url(row['song_title'], row['artist'], platform)
+                  st.link_button(
+                   label=f"**{row['song_title']}** — {row['artist']}",
+                    url=music_url,
+                    help=f"点击在 {platform} 中搜索此歌"
+                 )
+                  st.caption(f"来源: {row['source']}  |  相似度得分: {row['similarity']:.4f}")
                 with col2:
                     st.metric("播放量", f"{row['streams']:.2f}B" if row['streams'] < 100 else f"{row['streams']:.0f}B")
                 with col3:
