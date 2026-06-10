@@ -13,24 +13,27 @@ from sklearn.metrics.pairwise import cosine_similarity
 import urllib.parse
 
 def get_music_platform_url(song_name, artist_name, platform):
+    """
+    为不同音乐平台生成稳定的网页版搜索链接。
+    返回移动网页版URL，多数现代浏览器会询问是否在App中打开，体验良好。
+    """
+    # 1. 拼接搜索关键词，确保更精确
     keyword = f"{song_name} {artist_name}"
-    encoded = urllib.parse.quote(keyword)
-    
+    encoded_keyword = urllib.parse.quote(keyword)
+
+    # 2. 返回各平台的网页版搜索链接
     if platform == "QQ音乐":
-        # QQ音乐移动端搜索（实测可自动填词）
-        return f"https://y.qq.com/m/search/?w={encoded}"
+        # 使用移动端网页版搜索链接
+        return f"https://y.qq.com/n/ryqq/search?w={encoded_keyword}"
     elif platform == "酷狗音乐":
-        # 酷狗音乐移动端搜索（keyword参数有效）
-        return f"https://m.kugou.com/search/?keyword={encoded}"
+        # 酷狗音乐移动网页版搜索链接
+        return f"https://m.kugou.com/search?keyword={encoded_keyword}"
     elif platform == "网易云音乐":
-        # 网易云音乐移动端搜索（s参数有效）
-        return f"https://music.163.com/m/search?keyword={encoded}"   # 注意用 /m/ 移动版
+        # 网易云音乐移动网页版搜索链接
+        return f"https://music.163.com/#/search/m/?s={encoded_keyword}"
     elif platform == "Apple Music":
-        # Apple Music 网页版搜索（term参数有效）
-        return f"https://music.apple.com/cn/search?term={encoded}"
-    elif platform == "Spotify":
-        # Spotify 移动端搜索（自动填词并显示结果）
-        return f"https://open.spotify.com/search/{encoded}"
+        # 使用官方的通用网页版搜索链接
+        return f"https://music.apple.com/cn/search?term={encoded_keyword}"
     else:
         return "#"
 # ---------- 页面配置 ----------
