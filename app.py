@@ -14,27 +14,25 @@ import urllib.parse
 
 def get_music_platform_url(song_name, artist_name, platform):
     """
-    根据平台返回对应的搜索链接（支持网页版或App调起）
+    为不同音乐平台生成稳定的网页版搜索链接。
+    返回移动网页版URL，多数现代浏览器会询问是否在App中打开，体验良好。
     """
+    # 1. 拼接搜索关键词，确保更精确
     keyword = f"{song_name} {artist_name}"
     encoded_keyword = urllib.parse.quote(keyword)
-    
+
+    # 2. 返回各平台的网页版搜索链接
     if platform == "QQ音乐":
-        # 尝试 App 调起（手机），如果失败会自动跳转网页版？
-        # 这里使用 App 调起链接，手机上体验最好
-        return f"qqmusic://qq.com/search?key={encoded_keyword}"
-        # 备选网页版： f"https://y.qq.com/n/ryqq/search?w={encoded_keyword}"
+        # 使用移动端网页版搜索链接
+        return f"https://y.qq.com/n/ryqq/search?w={encoded_keyword}"
     elif platform == "酷狗音乐":
-        # 酷狗音乐的 App 调起 scheme（需要确认，常见的是 kugou://）
-        # 如果无效，可以改用网页版
-        return f"kugou://search?keyword={encoded_keyword}"
-        # 备选网页版： f"https://www.kugou.com/yy/html/search.html#searchType=song&searchKey={encoded_keyword}"
+        # 酷狗音乐移动网页版搜索链接
+        return f"https://m.kugou.com/search?keyword={encoded_keyword}"
     elif platform == "网易云音乐":
-        # 网易云音乐 App 调起 scheme
-        return f"orpheus://search?keyword={encoded_keyword}"
-        # 备选网页版： f"https://music.163.com/#/search/m/?s={encoded_keyword}"
+        # 网易云音乐移动网页版搜索链接
+        return f"https://music.163.com/#/search/m/?s={encoded_keyword}"
     elif platform == "Apple Music":
-        # Apple Music 网页版链接（因为 App 调起较复杂，使用网页版更通用）
+        # 使用官方的通用网页版搜索链接
         return f"https://music.apple.com/cn/search?term={encoded_keyword}"
     else:
         return "#"
